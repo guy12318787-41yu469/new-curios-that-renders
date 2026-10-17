@@ -1,0 +1,39 @@
+
+name: Build Minecraft Mod
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Build with Gradle
+        run: |
+          chmod +x gradlew 2>/dev/null || true
+          if [ -f gradlew ]; then
+            ./gradlew build
+          elif [ -f build.gradle ] || [ -f build.gradle.kts ]; then
+            gradle build
+          else
+            echo "No Gradle build file found"
+            exit 1
+          fi
+
+      - name: Upload JAR files
+        uses: actions/upload-artifact@v4
+        with:
+          name: Minecraft-Mod-JAR
+          path: build/libs/*.jar
